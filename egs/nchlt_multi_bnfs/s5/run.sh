@@ -25,13 +25,14 @@ numGaussSGMM=80000
 # Lexicon and Language Model Parameters
 oovsymbol="<unk>"
 
-train_nj=12
+train_nj=10
 decode_nj=8
 
 datadir=data
 expdir=exp
 
-languages=(eng nbl nso sot ssw tsn tso ven xho zul)
+#languages=(eng nbl nso sot ssw tsn tso ven xho zul)
+languages=(eng nbl)
 
 database="/home/ewaldvdw/projects/corpora"
 lm=
@@ -132,6 +133,10 @@ if [ $stage -le 7 ]; then
 fi
 
 
+if [ $stage -le 8 ]; then
+    # Train the BNF extractor.
+    local/nnet3/run_multilingual_bnf.sh
+fi
 
 exit 0
 

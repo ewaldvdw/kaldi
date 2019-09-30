@@ -13,6 +13,7 @@ speed_perturb=true
 use_pitch=true      # If true, it generates pitch features and combine it with 40dim MFCC.
 pitch_conf=conf/pitch.conf # Configuration used for pitch extraction.
 feat_suffix=_hires  # feature suffix for training data
+nj=10
 
 [ ! -f ./conf/common_vars.sh ] && echo 'the file conf/common_vars.sh does not exist!' && exit 1
 
@@ -42,28 +43,34 @@ if [ "$speed_perturb" == "true" ]; then
         ./utils/data/perturb_data_dir_speed_3way.sh data/$lang/${datadir} data/$lang/${datadir}_sp
 
         # Extract Plp+pitch feature for perturbed data.
-        featdir=plp_perturbed/$lang
+        # Extract MFCC+pitch feature for perturbed data.
+        #featdir=plp_perturbed/$lang
+        featdir=mfcc_perturbed/$lang
         if $use_pitch; then
-          steps/make_plp_pitch.sh --cmd "$train_cmd" --nj 70  data/$lang/${datadir}_sp exp/$lang/make_plp_pitch/${datadir}_sp $featdir
+          #steps/make_plp_pitch.sh --cmd "$train_cmd" --nj ${nj} data/$lang/${datadir}_sp exp/$lang/make_plp_pitch/${datadir}_sp $featdir
+          steps/make_mfcc_pitch.sh --cmd "$train_cmd" --nj ${nj} data/$lang/${datadir}_sp exp/$lang/make_mfcc_pitch/${datadir}_sp $featdir
         else
-          steps/make_plp.sh --cmd "$train_cmd" --nj 70 data/$lang/${datadir}_sp exp/$lang/make_plp/${datadir}_sp $featdir
+          #steps/make_plp.sh --cmd "$train_cmd" --nj ${nj} data/$lang/${datadir}_sp exp/$lang/make_plp/${datadir}_sp $featdir
+          steps/make_mfcc.sh --cmd "$train_cmd" --nj ${nj} data/$lang/${datadir}_sp exp/$lang/make_mfcc/${datadir}_sp $featdir
         fi
-        steps/compute_cmvn_stats.sh data/$lang/${datadir}_sp exp/$lang/make_plp/${datadir}_sp $featdir || exit 1;
+        #steps/compute_cmvn_stats.sh data/$lang/${datadir}_sp exp/$lang/make_plp/${datadir}_sp $featdir || exit 1;
+        steps/compute_cmvn_stats.sh data/$lang/${datadir}_sp exp/$lang/make_mfcc/${datadir}_sp $featdir || exit 1;
         utils/fix_data_dir.sh data/$lang/${datadir}_sp
       fi
     done
   fi
 
   train_set=train_sp
-  if [ $stage -le 2 ] && [ "$generate_alignments" == "true" ] && [ ! -f exp/$lang/tri5_ali_sp/.done ]; then
+  if [ $stage -le 2 ] && [ "$generate_alignments" == "true" ] && [ ! -f exp/$lang/tri3_ali_sp/.done ]; then
     #obtain the alignment of the perturbed data
     steps/align_fmllr.sh \
-      --nj 70 --cmd "$train_cmd" \
+      --nj ${nj} --cmd "$train_cmd" \
       --boost-silence $boost_sil \
-      data/$lang/$train_set data/$lang/lang exp/$lang/tri5 exp/$lang/tri5_ali_sp || exit 1
-    touch exp/$lang/tri5_ali_sp/.done
+      data/$lang/$train_set data/$lang/lang exp/$lang/tri3 exp/$lang/tri3_ali_sp || exit 1
+    touch exp/$lang/tri3_ali_sp/.done
   fi
 fi
+exit 0
 
 hires_config="--mfcc-config conf/mfcc_hires.conf"
 mfccdir=mfcc_hires/$lang
@@ -90,7 +97,7 @@ if [ $stage -le 3 ] && [ ! -f data/$lang/${train_set}${feat_suffix}/.done ]; the
     # scale the waveforms, this is useful as we don't use CMVN
     utils/data/perturb_data_dir_volume.sh $data_dir || exit 1;
 
-    steps/make_mfcc${mfcc_affix}.sh --nj 70 $hires_config \
+    steps/make_mfcc${mfcc_affix}.sh --nj ${nj} $hires_config \
       --cmd "$train_cmd" ${data_dir} $log_dir $mfccdir;
 
     steps/compute_cmvn_stats.sh ${data_dir} $log_dir $mfccdir;

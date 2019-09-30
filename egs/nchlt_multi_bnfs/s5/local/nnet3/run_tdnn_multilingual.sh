@@ -89,6 +89,7 @@ ivec_feat_suffix=${feat_suffix}
 if $use_pitch; then feat_suffix=${feat_suffix}_pitch ; fi
 if $use_pitch_ivector; then nnet3_affix=_pitch; ivec_feat_suffix=${feat_suffix}_pitch ; fi
 
+
 for lang_index in `seq 0 $[$num_langs-1]`; do
   echo "$0: extract high resolution 40dim MFCC + pitch for speed-perturbed data "
   echo "and extract alignment."
@@ -109,6 +110,7 @@ for lang_index in `seq 0 $[$num_langs-1]`; do
     fi
   fi
 done
+exit 0
 
 if $use_ivector; then
   ivector_suffix=""

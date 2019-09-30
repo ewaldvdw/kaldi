@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script trains a multilingual model using 6 layer TDNN + Xent
-# with 42 dim bottleneck layer in th fifth layer.
+# with `bnf_dim` dimensional bottleneck layer in the fifth layer.
 # Then it extracts bottleneck features for input language "lang" and
 # train SAT model using these feautures.
 
@@ -20,15 +20,16 @@ speed_perturb=true
 multilingual_dir=exp/nnet3/multi_bnf
 global_extractor=exp/multi/nnet3/extractor
 bnf_dim=42
+alidir=tri3_ali
 . ./utils/parse_options.sh
 
 
-lang=$1
+#lang=$1
 
-langconf=conf/$lang/lang.conf
+#langconf=conf/$lang/lang.conf
 
-[ ! -f $langconf ] && echo 'Language configuration does not exist! Use the configurations in conf/lang/* as a startup' && exit 1;
-. $langconf || exit 1;
+#[ ! -f $langconf ] && echo 'Language configuration does not exist! Use the configurations in conf/lang/* as a startup' && exit 1;
+#. $langconf || exit 1;
 
 [ ! -f local.conf ] && echo 'the file local.conf does not exist!' && exit 1;
 . local.conf || exit 1;
@@ -38,12 +39,13 @@ if $speed_perturb; then
   suffix=_sp
 fi
 
-exp_dir=exp/$lang
-datadir=data/$lang/train${suffix}_hires_mfcc_pitch
-appended_dir=data/$lang/train${suffix}_hires_mfcc_pitch_bnf
-data_bnf_dir=data/$lang/train${suffix}_bnf
-dump_bnf_dir=bnf/$lang
-ivector_dir=$exp_dir/nnet3/ivectors_train${suffix}_gb
+#exp_dir=exp/$lang
+#datadir=data/$lang/train${suffix}_hires_mfcc_pitch
+#appended_dir=data/$lang/train${suffix}_hires_mfcc_pitch_bnf
+#data_bnf_dir=data/$lang/train${suffix}_bnf
+#dump_bnf_dir=bnf/$lang
+#ivector_dir=$exp_dir/nnet3/ivectors_train${suffix}_gb
+
 ###############################################################################
 #
 # Training multilingual model with bottleneck layer
@@ -54,6 +56,7 @@ mkdir -p $multilingual_dir${suffix}
 if [ ! -f $multilingual_dir${suffix}/.done ]; then
   echo "$0: Train multilingual DNN using Bottleneck layer with lang list = ${lang_list[@]}"
   . local/nnet3/run_tdnn_multilingual.sh --dir $multilingual_dir \
+     --alidir $alidir \
      --bnf-dim $bnf_dim \
      --global-extractor $global_extractor \
      --train-stage $bnf_train_stage --stage $stage  || exit 1;
@@ -62,6 +65,8 @@ if [ ! -f $multilingual_dir${suffix}/.done ]; then
 else
   echo "$0 Skip multilingual DNN training; you can force to run this step by deleting $multilingual_dir${suffix}/.done"
 fi
+
+exit 0
 
 [ ! -d $dump_bnf_dir ] && mkdir -p $dump_bnf_dir
 if [ ! -f $data_bnf_dir/.done ]; then
