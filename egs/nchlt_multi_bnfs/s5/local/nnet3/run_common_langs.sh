@@ -48,13 +48,15 @@ if [ "$speed_perturb" == "true" ]; then
         featdir=mfcc_perturbed/$lang
         if $use_pitch; then
           #steps/make_plp_pitch.sh --cmd "$train_cmd" --nj ${nj} data/$lang/${datadir}_sp exp/$lang/make_plp_pitch/${datadir}_sp $featdir
+          #steps/compute_cmvn_stats.sh data/$lang/${datadir}_sp exp/$lang/make_plp_pitch/${datadir}_sp $featdir || exit 1;
           steps/make_mfcc_pitch.sh --cmd "$train_cmd" --nj ${nj} data/$lang/${datadir}_sp exp/$lang/make_mfcc_pitch/${datadir}_sp $featdir
+          steps/compute_cmvn_stats.sh data/$lang/${datadir}_sp exp/$lang/make_mfcc_pitch/${datadir}_sp $featdir || exit 1;
         else
           #steps/make_plp.sh --cmd "$train_cmd" --nj ${nj} data/$lang/${datadir}_sp exp/$lang/make_plp/${datadir}_sp $featdir
+          #steps/compute_cmvn_stats.sh data/$lang/${datadir}_sp exp/$lang/make_plp/${datadir}_sp $featdir || exit 1;
           steps/make_mfcc.sh --cmd "$train_cmd" --nj ${nj} data/$lang/${datadir}_sp exp/$lang/make_mfcc/${datadir}_sp $featdir
+          steps/compute_cmvn_stats.sh data/$lang/${datadir}_sp exp/$lang/make_mfcc/${datadir}_sp $featdir || exit 1;
         fi
-        #steps/compute_cmvn_stats.sh data/$lang/${datadir}_sp exp/$lang/make_plp/${datadir}_sp $featdir || exit 1;
-        steps/compute_cmvn_stats.sh data/$lang/${datadir}_sp exp/$lang/make_mfcc/${datadir}_sp $featdir || exit 1;
         utils/fix_data_dir.sh data/$lang/${datadir}_sp
       fi
     done
@@ -70,7 +72,6 @@ if [ "$speed_perturb" == "true" ]; then
     touch exp/$lang/tri3_ali_sp/.done
   fi
 fi
-exit 0
 
 hires_config="--mfcc-config conf/mfcc_hires.conf"
 mfccdir=mfcc_hires/$lang

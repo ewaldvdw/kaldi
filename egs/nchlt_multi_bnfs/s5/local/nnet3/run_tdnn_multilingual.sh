@@ -86,6 +86,7 @@ if [ "$speed_perturb" == "true" ]; then suffix=_sp; fi
 dir=${dir}${suffix}
 
 ivec_feat_suffix=${feat_suffix}
+nnet3_affix=
 if $use_pitch; then feat_suffix=${feat_suffix}_pitch ; fi
 if $use_pitch_ivector; then nnet3_affix=_pitch; ivec_feat_suffix=${feat_suffix}_pitch ; fi
 
@@ -103,14 +104,13 @@ for lang_index in `seq 0 $[$num_langs-1]`; do
     ivec_featdir=data/${lang_list[$lang_index]}/train${suffix}${ivec_feat_suffix}
     mfcc_only_dim=`feat-to-dim scp:$featdir/feats.scp - | awk '{print $1-3}'`
     if [ ! -f $ivec_featdir/.done ]; then
-      steps/select_feats.sh --cmd "$train_cmd" --nj 70 0-$[$mfcc_only_dim-1] \
+      steps/select_feats.sh --cmd "$train_cmd" --nj 10 0-$[$mfcc_only_dim-1] \
         $featdir ${ivec_featdir} || exit 1;
       steps/compute_cmvn_stats.sh ${ivec_featdir} || exit 1;
       touch ${ivec_featdir}/.done || exit 1;
     fi
   fi
 done
-exit 0
 
 if $use_ivector; then
   ivector_suffix=""
@@ -261,8 +261,8 @@ if [ $stage -le 11 ]; then
     --cmd="$decode_cmd" \
     --feat.cmvn-opts="--norm-means=false --norm-vars=false" \
     --trainer.num-epochs 2 \
-    --trainer.optimization.num-jobs-initial=2 \
-    --trainer.optimization.num-jobs-final=12 \
+    --trainer.optimization.num-jobs-initial=1 \
+    --trainer.optimization.num-jobs-final=1 \
     --trainer.optimization.initial-effective-lrate=0.0015 \
     --trainer.optimization.final-effective-lrate=0.00015 \
     --trainer.optimization.minibatch-size=256,128 \
@@ -298,6 +298,7 @@ if [ $stage -le 12 ]; then
       $lang_dir ${multi_egs_dirs[$lang_index]} || exit 1;
   done
 fi
+exit 0
 
 # decoding different languages
 if [ $stage -le 13 ]; then
