@@ -136,6 +136,6 @@ fi
 
 if [ $stage -le 8 ]; then
     # Train the BNF extractor.
-    local/nnet3/run_multilingual_bnf.sh --alidir tri3_ali
+    local/nnet3/run_multilingual_bnf.sh --alidir tri3_ali nchlt_nbl
 fi
 

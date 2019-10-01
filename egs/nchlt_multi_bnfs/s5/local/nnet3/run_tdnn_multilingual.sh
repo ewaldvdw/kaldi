@@ -298,8 +298,8 @@ if [ $stage -le 12 ]; then
       $lang_dir ${multi_egs_dirs[$lang_index]} || exit 1;
   done
 fi
-exit 0
 
+if false; then
 # decoding different languages
 if [ $stage -le 13 ]; then
   num_decode_lang=${#decode_lang_list[@]}
@@ -313,4 +313,5 @@ if [ $stage -le 13 ]; then
       touch $dir/${decode_lang_list[$lang_index]}/decode_dev10h.pem/.done
     fi
   done
+fi
 fi

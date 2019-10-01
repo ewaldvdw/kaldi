@@ -21,10 +21,19 @@ multilingual_dir=exp/nnet3/multi_bnf
 global_extractor=exp/multi/nnet3/extractor
 bnf_dim=42
 alidir=tri3_ali
+
+# BNF extraction options
+dump_bnf_dir="bnf/nchlt_nbl"
+#datadir=data/$lang/train${suffix}_hires_mfcc_pitch
+datadir="data/nchlt_nbl/train_sp_hires_pitch"
+data_bnf_dir="data/nchlt_nbl/train_sp_bnf"
+ivector_dir="exp/nchlt_nbl/nnet3/ivectors_train_sp_hires_gb"
+exp_dir="exp/nchlt_nbl"
+
 . ./utils/parse_options.sh
 
 
-#lang=$1
+lang=$1
 
 #langconf=conf/$lang/lang.conf
 
@@ -39,12 +48,7 @@ if $speed_perturb; then
   suffix=_sp
 fi
 
-#exp_dir=exp/$lang
-#datadir=data/$lang/train${suffix}_hires_mfcc_pitch
 #appended_dir=data/$lang/train${suffix}_hires_mfcc_pitch_bnf
-#data_bnf_dir=data/$lang/train${suffix}_bnf
-#dump_bnf_dir=bnf/$lang
-#ivector_dir=$exp_dir/nnet3/ivectors_train${suffix}_gb
 
 ###############################################################################
 #
@@ -66,14 +70,13 @@ else
   echo "$0 Skip multilingual DNN training; you can force to run this step by deleting $multilingual_dir${suffix}/.done"
 fi
 
-exit 0
 
 [ ! -d $dump_bnf_dir ] && mkdir -p $dump_bnf_dir
 if [ ! -f $data_bnf_dir/.done ]; then
   multilingual_dir=$multilingual_dir${suffix}
   mkdir -p $dump_bnf_dir
   # put the archives in ${dump_bnf_dir}/.
-  steps/nnet3/make_bottleneck_features.sh --use-gpu true --nj 70 --cmd "$train_cmd" \
+  steps/nnet3/make_bottleneck_features.sh --use-gpu true --nj 10 --cmd "$train_cmd" \
     --ivector-dir $ivector_dir \
     tdnn_bn.renorm $datadir $data_bnf_dir \
     $multilingual_dir $dump_bnf_dir $exp_dir/make_train_bnf || exit 1;
@@ -81,6 +84,8 @@ if [ ! -f $data_bnf_dir/.done ]; then
 else
   echo "$0 Skip Bottleneck feature extraction; You can force to run this step deleting $data_bnf_dir/.done."
 fi
+
+exit 0
 
 if [ ! -d $appended_dir/.done ]; then
   steps/append_feats.sh --cmd "$train_cmd" --nj 4 \
