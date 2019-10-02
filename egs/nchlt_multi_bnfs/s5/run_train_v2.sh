@@ -31,8 +31,8 @@ decode_nj=8
 datadir=data
 expdir=exp
 
-#languages=(eng nbl nso sot ssw tsn tso ven xho zul)
-languages=(eng nbl)
+languages=(nbl nso sot ssw tsn tso ven xho zul)
+#languages=(eng nbl)
 
 database="/home/ewaldvdw/projects/corpora"
 lm=

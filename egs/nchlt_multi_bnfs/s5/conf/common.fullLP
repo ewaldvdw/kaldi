@@ -1,6 +1,6 @@
 # BNF training parameters
 bnf_num_hidden_layers=6
-bottleneck_dim=42
+bottleneck_dim=39
 bnf_hidden_layer_dim=2048
 bnf_minibatch_size=512
 bnf_init_learning_rate=0.008

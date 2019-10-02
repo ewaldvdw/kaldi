@@ -19,7 +19,7 @@ stage=1
 speed_perturb=true
 multilingual_dir=exp/nnet3/multi_bnf
 global_extractor=exp/multi/nnet3/extractor
-bnf_dim=42
+bnf_dim=39
 alidir=tri3_ali
 
 # BNF extraction options
@@ -69,6 +69,7 @@ if [ ! -f $multilingual_dir${suffix}/.done ]; then
 else
   echo "$0 Skip multilingual DNN training; you can force to run this step by deleting $multilingual_dir${suffix}/.done"
 fi
+exit 0
 
 
 [ ! -d $dump_bnf_dir ] && mkdir -p $dump_bnf_dir
