@@ -39,12 +39,12 @@ for alang in "${languages[@]}"; do
 
         cp "${trns_fn}" "${adatadir}/text"
         # Use characters 7 to 14 contain the speaker ID
-        paste -d' ' <(cut -d' ' -f1 "${adatadir}/text") <(cut -b7-14 "${adatadir}/text") > "${adatadir}/utt2spk"
+        paste -d' ' <(cut -d' ' -f1 "${adatadir}/text") <(cut -b1-14 "${adatadir}/text") > "${adatadir}/utt2spk"
 
         utils/utt2spk_to_spk2utt.pl "${adatadir}/utt2spk" > "${adatadir}/spk2utt" || exit 1;
 
         # Make the wav.scp file
-        paste -d' ' <(cut -d' ' -f1 "${adatadir}/utt2spk") <(cut -d' ' -f2 "${adatadir}/utt2spk" | sed "s/^${alang}_//g" | sed "s/[mf]$//g" | sed "s+^+${corpora_dir}/nchlt_${alang}/audio/+g") > "${adatadir}/wav.scp.edit"
+        paste -d' ' <(cut -d' ' -f1 "${adatadir}/utt2spk") <(cut -d' ' -f2 "${adatadir}/utt2spk" | sed "s/^nchlt_${alang}_//g" | sed "s/[mf]$//g" | sed "s+^+${corpora_dir}/nchlt_${alang}/audio/+g") > "${adatadir}/wav.scp.edit"
         paste -d'/' "${adatadir}/wav.scp.edit" <(cut -d' ' -f1 "${adatadir}/utt2spk" | sed "s/$/.wav/g") > "${adatadir}/wav.scp"
         [ -f "${adatadir}/wav.scp.edit" ] && rm "${adatadir}/wav.scp.edit"
 
