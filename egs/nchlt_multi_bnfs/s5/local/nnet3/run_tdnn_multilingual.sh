@@ -280,6 +280,8 @@ if [ $stage -le 11 ]; then
     --dir=$dir  || exit 1;
 fi
 
+# These last two steps are not required if we only want a BNF extractor network that was trained in the previous step.
+if false; then
 if [ $stage -le 12 ]; then
   for lang_index in `seq 0 $[$num_langs-1]`;do
     lang_dir=$dir/${lang_list[$lang_index]}
@@ -299,7 +301,6 @@ if [ $stage -le 12 ]; then
   done
 fi
 
-if false; then
 # decoding different languages
 if [ $stage -le 13 ]; then
   num_decode_lang=${#decode_lang_list[@]}
