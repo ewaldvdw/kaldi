@@ -37,6 +37,8 @@ languages=(nbl nso sot ssw tsn tso ven xho zul)
 database="/home/ewaldvdw/projects/corpora"
 lm=
 
+bnf_dim=39
+
 # Parse command line options
 . utils/parse_options.sh
 
@@ -136,6 +138,6 @@ fi
 
 if [ $stage -le 8 ]; then
     # Train the BNF extractor.
-    local/nnet3/run_multilingual_bnf.sh --alidir tri3_ali nchlt_nbl
+    local/nnet3/run_multilingual_bnf.sh --bnf-dim "${bnf_dim}" --alidir tri3_ali nchlt_nbl
 fi
 
