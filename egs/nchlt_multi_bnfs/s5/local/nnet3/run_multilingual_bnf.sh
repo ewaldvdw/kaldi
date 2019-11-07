@@ -55,7 +55,7 @@ fi
 # Training multilingual model with bottleneck layer
 #
 ###############################################################################
-mkdir -p $multilingual_dir${suffix}
+[ ! -d "$multilingual_dir${suffix}" ] && mkdir -p "$multilingual_dir${suffix}"
 
 if [ ! -f $multilingual_dir${suffix}/.done ]; then
   echo "$0: Train multilingual DNN using Bottleneck layer with lang list = ${lang_list[@]}"

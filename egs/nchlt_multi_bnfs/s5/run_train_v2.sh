@@ -38,6 +38,8 @@ database="/home/ewaldvdw/projects/corpora"
 lm=
 
 bnf_dim=39
+# Use nn_train_iter to continue an interrupted NN training session. Just specify the iteration from which to continue.
+bnf_train_stage=-10
 
 # Parse command line options
 . utils/parse_options.sh
@@ -138,6 +140,6 @@ fi
 
 if [ $stage -le 8 ]; then
     # Train the BNF extractor.
-    local/nnet3/run_multilingual_bnf.sh --bnf-dim "${bnf_dim}" --alidir tri3_ali nchlt_nbl
+    local/nnet3/run_multilingual_bnf.sh --bnf-dim "${bnf_dim}" --bnf-train-stage ${bnf_train_stage} --alidir tri3_ali nchlt_nbl
 fi
 
