@@ -22,5 +22,11 @@ Run `run_extract_bnfs.sh`:
 
     bash run_extract_bnfs.sh
 
+The `modeldim` variable can be set to `d39`, `d80` or `d120` for BNF dimensions 39, 80 or 120. For example,
+
+    bash run_extract_bnfs.sh --modeldim d80
+
+can be used to extract 80 dimensional BNFs, or edit the variable directly in the script.
+
 If all goes well, the BNFs should be in the `bnf/train` directory.
 
