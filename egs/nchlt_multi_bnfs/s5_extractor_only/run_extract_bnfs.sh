@@ -12,8 +12,8 @@ set -u           #Fail on an undefined variable
 
 nj=10
 
-bnf_model_dir="models/nnet3/9lang"
-global_extractor="models/multi/nnet3/extractor"
+# BNF dimension can be d39, d80 or d120. This selects the extraction models to use (default is "d39").
+modeldim=d39
 
 # BNF extraction options
 dump_bnf_dir="bnf/train"
@@ -24,6 +24,9 @@ ivector_dir=exp/ivectors/train
 exp_dir="exp"
 
 . ./utils/parse_options.sh
+
+bnf_model_dir="models_${modeldim}/nnet3/9lang"
+global_extractor="models_${modeldim}/multi/nnet3/extractor"
 
 
 # Make hi-res MFCC features.
