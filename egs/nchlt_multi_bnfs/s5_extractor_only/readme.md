@@ -11,7 +11,7 @@ branch of his Kaldi fork on Bitbucket.
 
 Usage:
 
-Create a `data/train_hires` and a `data/train_hiresi_pitch` directory that each contain the necessary files:
+Create a `data/train_hires` and a `data/train_hires_pitch` directory that each contain the necessary files:
 
     spk2utt
     text
