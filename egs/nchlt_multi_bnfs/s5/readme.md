@@ -7,7 +7,9 @@ We want to experiment with TDNN-F too, but this has to be implemented still.
 
 Extractors with BN dimensions of 39, 80 and 120 have been trained on the training set data of the nine Bantu langauges in the NCHLT corpora.
 
+
 ## Required corpora
+
 Get the zipped corpora from Ewald. The MD5 signatures for these zip files are:
 
     f7513996116d3cb445bdef716af981ba  nchlt_afr.zip
@@ -22,10 +24,10 @@ Get the zipped corpora from Ewald. The MD5 signatures for these zip files are:
     b7e5095a6c6dc008605f38093f1bf601  nchlt_xho.zip
     b7febbbabf7698528761b39cd6528f83  nchlt_zul.zip
 
-Under your cloned Kaldi directory, make a directory called `data` and unzip each of the zip files in the `data` directory.
+Under your cloned Kaldi root directory ($KALDI_ROOT), make a directory called `data` and unzip each of the corpora zip files in the `data` directory.
 The content of this data directory should look as follows:
 
-    /<path_to_your_kaldi_dir>/data/nchlt_afr
+    /<path_to_your_kaldi_root_dir>/data/nchlt_afr
                                        ├── audio
                                        │   ├─ 001
                                        │   │  └─ <wav_files_for_speaker_001>
@@ -46,7 +48,7 @@ The content of this data directory should look as follows:
                                            ├── nchlt_afr.trn.xml
                                            └── nchlt_afr.tst.txt
 
-    /<path_to_your_kaldi_dir>/data/nchlt_eng/
+    /<path_to_your_kaldi_root_dir>/data/nchlt_eng/
                                        ├── audio
                                        │   ├─ 001
                                        │   │  └─ <wav_files_for_speaker_001>
@@ -67,12 +69,17 @@ The content of this data directory should look as follows:
                                            ├── nchlt_eng.trn.xml
                                            └── nchlt_eng.tst.txt
 
-    /<path_to_your_kaldi_dir>/data/nchlt_nbl/
+    /<path_to_your_kaldi_root_dir>/data/nchlt_nbl/
                                        ├── etc. etc. The rest of the corpora follow the same pattern.
 
-    /<path_to_your_kaldi_dir>/data/nchlt_nso/
+    /<path_to_your_kaldi_root_dir>/data/nchlt_nso/
                                        ├── etc. etc. The rest of the corpora follow the same pattern.
     ...
     etc.
 
+Got to the `/<path_to_your_kaldi_root_dir>/egs/nchlt_multi_bnfs/s5` directory. And execute the `run.sh` script with `bash`:
+
+    bash run.sh
+
+Hopefully you don't see any error messages.
 
