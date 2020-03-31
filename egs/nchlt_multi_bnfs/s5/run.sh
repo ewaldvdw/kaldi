@@ -34,6 +34,7 @@ expdir=exp
 languages=(nbl nso sot ssw tsn tso ven xho zul)
 #languages=(eng nbl)
 
+# Location of the NCHLT corpora
 database="$KALDI_ROOT/data"
 lm=
 
