@@ -34,7 +34,7 @@ expdir=exp
 languages=(nbl nso sot ssw tsn tso ven xho zul)
 #languages=(eng nbl)
 
-database="/home/ewaldvdw/projects/corpora"
+database="$KALDI_ROOT/data"
 lm=
 
 bnf_dim=39
