@@ -31,11 +31,15 @@ decode_nj=8
 datadir=data
 expdir=exp
 
-#languages=(eng nbl nso sot ssw tsn tso ven xho zul)
-languages=(eng nbl)
+languages=(nbl nso sot ssw tsn tso ven xho zul)
+#languages=(eng nbl)
 
 database="/home/ewaldvdw/projects/corpora"
 lm=
+
+bnf_dim=39
+# Use nn_train_iter to continue an interrupted NN training session. Just specify the iteration from which to continue.
+bnf_train_stage=-10
 
 # Parse command line options
 . utils/parse_options.sh
@@ -45,15 +49,10 @@ if [ $stage -le 0 ]; then
     echo "         Prepare speech data"
     echo ===========================================================================
 
-    datadirs_to_merge=()
     for alang in "${languages[@]}"; do
         local/prepare_data.sh --corpora_dir $database --set-list "trn" --languages "${alang}" --datadir "${datadir}" || exit 1
-        datadirs_to_merge=(${datadirs_to_merge[*]} "${datadir}/nchlt_${alang}/train")
     done
 
-    # Merge the data direcories
-    utils/combine_data.sh ${datadir}/train ${datadirs_to_merge[*]}
-    utils/validate_data_dir.sh --no-feats ${datadir}/train
 fi
 
 
@@ -62,22 +61,15 @@ if [ $stage -le 1 ]; then
     echo "         Prepare pronunciation dictionary"
     echo ===========================================================================
 
-    lexs_to_merge=()
     for alang in "${languages[@]}"; do
         echo "Preparing lexicon for: ${alang}"
         lexicon_fn=$(ls -1 ${database}/nchlt_${alang}/nchlt_corpus_${alang}_*dict.gz)
         lex_outdir=${datadir}/nchlt_${alang}/local/dict
         echo "Using lexicon file: ${lexicon_fn}"
         local/prepare_dict.sh $lexicon_fn ${lex_outdir} || exit 1
-        lexs_to_merge=(${lexs_to_merge[*]} ${lex_outdir})
+        utils/prepare_lang.sh ${datadir}/nchlt_${alang}/local/dict "!SIL" ${datadir}/nchlt_${alang}/local/lang ${datadir}/nchlt_${alang}/lang || exit 1
     done
 
-    # Merge the lexicons
-    local/merge_dictionary_dirs.sh "${datadir}/local/dict" ${lexs_to_merge[*]}
-
-    utils/prepare_lang.sh data/local/dict "!SIL" data/local/lang data/lang || exit 1
-
-    #local/prepare_lm.sh $lm || exit 1
 fi
 
 
@@ -87,14 +79,17 @@ if [ $stage -le 2 ]; then
     echo ============================================================================
 
     # Now make MFCC features.
-    mfccdir=mfcc
+    for alang in "${languages[@]}"; do
+        mfccdir=mfcc/nchlt_${alang}
 
-    #for x in train test; do 
-    for aset in train; do 
-      steps/make_mfcc.sh --cmd "$train_cmd" --nj $train_nj data/$aset exp/make_mfcc/$aset $mfccdir
-      utils/fix_data_dir.sh data/$aset; # run by hand due to an error in previous step
-      steps/compute_cmvn_stats.sh data/$aset exp/make_mfcc/$aset $mfccdir
-      utils/fix_data_dir.sh data/$aset; # run by hand due to an error in previous step
+        #for x in train test; do 
+        for aset in train; do 
+          #steps/make_mfcc.sh --cmd "$train_cmd" --nj $train_nj ${datadir}/nchlt_${alang}/$aset ${expdir}/nchlt_${alang}/make_mfcc/$aset $mfccdir
+          steps/make_mfcc_pitch.sh --cmd "$train_cmd" --nj $train_nj ${datadir}/nchlt_${alang}/$aset ${expdir}/nchlt_${alang}/make_mfcc/$aset $mfccdir
+          utils/fix_data_dir.sh ${datadir}/nchlt_${alang}/$aset; # run by hand due to an error in previous step
+          steps/compute_cmvn_stats.sh ${datadir}/nchlt_${alang}/$aset ${expdir}/nchlt_${alang}/make_mfcc/$aset $mfccdir
+          utils/fix_data_dir.sh ${datadir}/nchlt_${alang}/$aset; # run by hand due to an error in previous step
+        done
     done
 fi
 
@@ -104,45 +99,47 @@ if [ $stage -le 3 ]; then
     echo "                     Monophone training"
     echo ============================================================================
 
-    steps/train_mono.sh --nj "$train_nj" --cmd "$train_cmd" ${datadir}/train ${datadir}/lang ${expdir}/mono
+    for alang in "${languages[@]}"; do
+        steps/train_mono.sh --nj "$train_nj" --cmd "$train_cmd" ${datadir}/nchlt_${alang}/train ${datadir}/nchlt_${alang}/lang ${expdir}/nchlt_${alang}/mono
+    done
 fi
 
 ### Triphone
 if [ $stage -le 4 ]; then
     echo "Starting triphone training."
-    steps/align_si.sh --nj $train_nj --cmd "$train_cmd" $datadir/train $datadir/lang $expdir/mono $expdir/mono_ali || exit 1;
-    steps/train_deltas.sh --boost-silence 1.25 --cmd "$train_cmd" $numLeavesTri $numGaussTri $datadir/train $datadir/lang $expdir/mono_ali $expdir/tri1 || exit 1;
+    for alang in "${languages[@]}"; do
+        steps/align_si.sh --nj $train_nj --cmd "$train_cmd" $datadir/nchlt_${alang}/train $datadir/nchlt_${alang}/lang $expdir/nchlt_${alang}/mono $expdir/nchlt_${alang}/mono_ali || exit 1;
+        steps/train_deltas.sh --boost-silence 1.25 --cmd "$train_cmd" $numLeavesTri $numGaussTri $datadir/nchlt_${alang}/train $datadir/nchlt_${alang}/lang $expdir/nchlt_${alang}/mono_ali $expdir/nchlt_${alang}/tri1 || exit 1;
+    done
     echo "Triphone training done."
 fi
 
 if [ $stage -le 5 ]; then
-    steps/align_si.sh --nj $train_nj --cmd "$train_cmd" $datadir/train $datadir/lang $expdir/tri1 $expdir/tri1_ali || exit 1;
     echo "Starting LDA+MLLT training."
-    steps/train_lda_mllt.sh --cmd "$train_cmd" --splice-opts "--left-context=3 --right-context=3" $numLeavesMLLT $numGaussMLLT $datadir/train $datadir/lang $expdir/tri1_ali $expdir/tri2 || exit 1;
+    for alang in "${languages[@]}"; do
+        steps/align_si.sh --nj $train_nj --cmd "$train_cmd" $datadir/nchlt_${alang}/train $datadir/nchlt_${alang}/lang $expdir/nchlt_${alang}/tri1 $expdir/nchlt_${alang}/tri1_ali || exit 1;
+        steps/train_lda_mllt.sh --cmd "$train_cmd" --splice-opts "--left-context=3 --right-context=3" $numLeavesMLLT $numGaussMLLT $datadir/nchlt_${alang}/train $datadir/nchlt_${alang}/lang $expdir/nchlt_${alang}/tri1_ali $expdir/nchlt_${alang}/tri2 || exit 1;
+    done
 fi
 
 if [ $stage -le 6 ]; then
-    steps/align_si.sh --nj $train_nj --cmd "$train_cmd" --use-graphs true $datadir/train $datadir/lang $expdir/tri2 $expdir/tri2_ali || exit 1;
     echo "Starting SAT+FMLLR training."
-    steps/train_sat.sh --cmd "$train_cmd" $numLeavesSAT $numGaussSAT $datadir/train $datadir/lang $expdir/tri2_ali $expdir/tri3 || exit 1;
+    for alang in "${languages[@]}"; do
+        steps/align_si.sh --nj $train_nj --cmd "$train_cmd" --use-graphs true $datadir/nchlt_${alang}/train $datadir/nchlt_${alang}/lang $expdir/nchlt_${alang}/tri2 $expdir/nchlt_${alang}/tri2_ali || exit 1;
+        steps/train_sat.sh --cmd "$train_cmd" $numLeavesSAT $numGaussSAT $datadir/nchlt_${alang}/train $datadir/nchlt_${alang}/lang $expdir/nchlt_${alang}/tri2_ali $expdir/nchlt_${alang}/tri3 || exit 1;
+    done
 fi
 
 if [ $stage -le 7 ]; then
     echo "Getting alignments using SAT+FMLLR models."
-    steps/align_si.sh --nj $train_nj --cmd "$train_cmd" --use-graphs true $datadir/train $datadir/lang $expdir/tri3 $expdir/tri3_ali || exit 1;
+    for alang in "${languages[@]}"; do
+        steps/align_si.sh --nj $train_nj --cmd "$train_cmd" --use-graphs true $datadir/nchlt_${alang}/train $datadir/nchlt_${alang}/lang $expdir/nchlt_${alang}/tri3 $expdir/nchlt_${alang}/tri3_ali || exit 1;
+    done
 fi
 
 
 if [ $stage -le 8 ]; then
     # Train the BNF extractor.
-    local/nnet3/run_multilingual_bnf.sh
+    local/nnet3/run_multilingual_bnf.sh --bnf-dim "${bnf_dim}" --bnf-train-stage ${bnf_train_stage} --alidir tri3_ali nchlt_nbl
 fi
-
-exit 0
-
-# local/chain/multilingual/run_tdnn_f.sh --stage 8
-
-# Train the BNF extractor.
-local/nnet3/run_multilingual_bnf.sh
-
 
