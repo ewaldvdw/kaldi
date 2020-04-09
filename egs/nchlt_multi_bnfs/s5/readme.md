@@ -77,9 +77,22 @@ The content of this data directory should look as follows:
     ...
     etc.
 
+## Usage
+
 Got to the `/<path_to_your_kaldi_root_dir>/egs/nchlt_multi_bnfs/s5` directory. And execute the `run.sh` script with `bash`:
 
     bash run.sh
+
+## Changing the BNF dimensionality
+
+Edit line 3 in `conf/common.fullLP` to your choosing:
+
+    bottleneck_dim=39
+
+And, edit line 41 in `run.sh` to the same value:
+
+    bnf_dim=39
+
 
 Hopefully you don't see any error messages.
 
