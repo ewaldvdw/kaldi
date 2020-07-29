@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # The script downloads and installs kaldi_lm
+
+GIT=${GIT:-git}
 
 set -e
 
@@ -15,7 +17,7 @@ fi
 echo "Installing kaldi_lm"
 
 if [ ! -d "kaldi_lm" ]; then
-  git clone https://github.com/danpovey/kaldi_lm.git || exit 1
+  $GIT clone https://github.com/danpovey/kaldi_lm.git || exit 1
 fi
 
 cd kaldi_lm
