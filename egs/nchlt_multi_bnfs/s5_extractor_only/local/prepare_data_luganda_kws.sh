@@ -28,16 +28,16 @@ datadirout=$3
 
 # For full length utterances
 # Create the 'text' transcription file
-for set in test dev train; do
+for aset in test dev train; do
 
-  dir=$datadirout/$set
+  dir=$datadirout/$aset
   [ ! -d "${dir}" ] && mkdir -p $dir
 
-  if [ "${set}" == "test" ]; then
+  if [ "${aset}" == "test" ]; then
       setpat=tst
-  elif [ "${set}" == "dev" ]; then
+  elif [ "${aset}" == "dev" ]; then
       setpat=dev
-  elif [ "${set}" == "train" ]; then
+  elif [ "${aset}" == "train" ]; then
       setpat=trn
   fi
 
