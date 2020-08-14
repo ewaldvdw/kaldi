@@ -3,8 +3,8 @@ from os import path
 
 # Arg 1: The input text file name
 # Arg 2: The location (directory) of the wav files
-# Arg 3: The output wav.scp file name
-# Arg 4: The output segments file name
+# Arg 3: The output segments file name
+# Arg 4: The output wav.scp file name
 
 # Output segment file format <utterance-id> <recording-id> <segment-begin> <segment-end>
 # <segment-begin> and <segment-end> in seconds
