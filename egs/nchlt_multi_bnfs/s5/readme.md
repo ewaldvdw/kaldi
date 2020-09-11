@@ -1,6 +1,6 @@
 # The NCHLT BNF extractor
 
-This recipe to train a bottleneck feature (BNF) extractor using the NCHLT speech corpora for South African language
+This recipe to train a bottleneck feature (BNF) extractor using the NCHLT speech corpora for South African languages
 follows the Babel BNF extractor recipe as closely as possible.
 
 The NN architecture currently used in the Babel recipe is TDNN, which is what is used here.
@@ -15,15 +15,15 @@ For any questions and queries, contact the repository mainteners (Ewald, Trideba
 * *The NCHLT speech corpora* for the nine South African Bantu languages. The corpora can be downloaded free of charge from 
   the SADiLaR (https://www.sadilar.org) resource website.
 * *The NCHLT corpus dictionaries.* The corpus dictionaries were available at https://sites.google.com/site/nchltspeechcorpus
-  but have recently became less accessible. We therefore include these dictionary files in our repository under `resources/corpus_dictionaries/`.
+  but have since became less accessible. We therefore include these dictionary files in our repository under `resources/corpus_dictionaries/`.
 * The training, development and test set definitions provided under `resources/set_definitions/`.
 
 
 ## Corpora preparation
 
-The downloading and preparation of the speech corpora are done automatically in the `egs/nchlt_multi_bnf/s5/run.sh`.
+The downloading and preparation of the speech corpora are done automatically in the `egs/nchlt_multi_bnf/s5/run.sh` script.
 The speech corpora file names have the following format, `nchlt.speech.corpus.<language_code>.zip`.
-The will be downloaded and placed under a `data` directory in your cloned Kaldi root directory (`$KALDI_ROOT/data`).
+They will be downloaded and placed under a `data` directory in your cloned Kaldi root directory (`$KALDI_ROOT/data`).
 The content of this data directory should look as follows after unzipping the corpora archives:
 
     /<path_to_your_kaldi_root_dir>/data/nchlt_nbl/
@@ -66,7 +66,7 @@ Edit line 3 in `conf/common.fullLP` to your choosing:
 
     bottleneck_dim=39
 
-And, edit line 41 in `run.sh` to the same value:
+And, edit line 40 in `run.sh` to the same value:
 
     bnf_dim=39
 
