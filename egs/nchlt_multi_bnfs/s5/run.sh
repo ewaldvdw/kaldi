@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Author: Ewald van der Westhuizen
+# Author: Ewald van der Westhuizen, Trideba Padhi
 # Affiliation: Stellenbosch University
 
 # The main run script to train the NCHLT BNF extractor.
@@ -32,9 +32,8 @@ datadir=data
 expdir=exp
 
 languages=(nbl nso sot ssw tsn tso ven xho zul)
-#languages=(eng nbl)
 
-# Location of the NCHLT corpora
+# Location of the NCHLT corpora. In our setup we put them in $KALDI_ROOT/data/.
 database="$KALDI_ROOT/data"
 lm=
 
@@ -45,11 +44,56 @@ bnf_train_stage=-10
 # Parse command line options
 . utils/parse_options.sh
 
+# The download link for the NCHLT corpora.
+declare -A dl_links
+dl_links[afr]="https://repo.sadilar.org/bitstream/handle/20.500.12185/280/nchlt.speech.corpus.afr.zip?sequence=3&isAllowed=y"
+dl_links[eng]="https://repo.sadilar.org/bitstream/handle/20.500.12185/274/nchlt.speech.corpus.eng_1.zip?sequence=3&isAllowed=y"
+dl_links[nbl]="https://repo.sadilar.org/bitstream/handle/20.500.12185/272/nchlt.speech.corpus.nbl.zip?sequence=3&isAllowed=y"
+dl_links[nso]="https://repo.sadilar.org/bitstream/handle/20.500.12185/270/nchlt.speech.corpus.nso.zip?sequence=3&isAllowed=y"
+dl_links[sot]="https://repo.sadilar.org/bitstream/handle/20.500.12185/278/nchlt.speech.corpus.sot.zip?sequence=3&isAllowed=y"
+dl_links[ssw]="https://repo.sadilar.org/bitstream/handle/20.500.12185/271/nchlt.speech.corpus.ssw.zip?sequence=3&isAllowed=y"
+dl_links[tsn]="https://repo.sadilar.org/bitstream/handle/20.500.12185/281/nchlt.speech.corpus.tsn.zip?sequence=3&isAllowed=y"
+dl_links[tso]="https://repo.sadilar.org/bitstream/handle/20.500.12185/277/nchlt.speech.corpus.tso.zip?sequence=3&isAllowed=y"
+dl_links[ven]="https://repo.sadilar.org/bitstream/handle/20.500.12185/276/nchlt.speech.corpus.ven.zip?sequence=3&isAllowed=y"
+dl_links[xho]="https://repo.sadilar.org/bitstream/handle/20.500.12185/279/nchlt.speech.corpus.xho.zip?sequence=3&isAllowed=y"
+dl_links[zul]="https://repo.sadilar.org/bitstream/handle/20.500.12185/275/nchlt.speech.corpus.zul.zip?sequence=3&isAllowed=y"
+
+
 if [ $stage -le 0 ]; then
     echo ===========================================================================
     echo "         Prepare speech data"
     echo ===========================================================================
 
+    [ ! -d "$KALDI_ROOT/data" ] && mkdir -p "$KALDI_ROOT/data"
+
+    # Download the speech corpora if they haven't been yet.
+    for alang in "${languages[@]}"; do
+        if [ ! -f "$KALDI_ROOT/data/nchlt.speech.corpus.${alang}.zip" ]; then
+            read -p "Proceed to download NCHLT speech corpus for ${alang}? [Y/n]: " ananswer
+            if [ "$ananswer" != "n" ]; then
+                echo "Downloading the speech corpus for $alang."
+                wget -O "$KALDI_ROOT/data/nchlt.speech.corpus.${alang}.zip" "${dl_links[$alang]}"
+            fi
+        fi
+    done
+
+    # Unzip the downloaded corpora.
+    for alang in "${languages[@]}"; do
+        if [ -f "$KALDI_ROOT/data/nchlt_$alang/transcriptions/nchlt_${alang}.trn.xml" ]; then
+            echo "Using existing $KALDI_ROOT/data/nchlt_${alang}/"
+        elif [ -f "$KALDI_ROOT/data/nchlt.speech.corpus.${alang}.zip" ]; then
+            echo "Unzipping $KALDI_ROOT/data/nchlt.speech.corpus.${alang}.zip"
+            unzip -d "$KALDI_ROOT/data/" "$KALDI_ROOT/data/nchlt.speech.corpus.${alang}.zip" >/dev/null
+        else
+            echo "Error during Downloading/unzipping of speech corpus for ${alang}"
+            exit 1
+        fi
+    done
+
+    # Convert the XML transcriptions to Kaldi-compatible text.
+    PYTHON_PATH=$PYTHON_PATH; python local/nchlt/nchlt_preparetranscriptions.py
+
+    # Do data preparation.
     for alang in "${languages[@]}"; do
         local/prepare_data.sh --corpora_dir $database --set-list "trn" --languages "${alang}" --datadir "${datadir}" || exit 1
     done
@@ -64,7 +108,7 @@ if [ $stage -le 1 ]; then
 
     for alang in "${languages[@]}"; do
         echo "Preparing lexicon for: ${alang}"
-        lexicon_fn=$(ls -1 ${database}/nchlt_${alang}/nchlt_corpus_${alang}_*dict.gz)
+        lexicon_fn="resources/corpus_dictionaries/nchlt_corpus_${alang}_*dict.gz"
         lex_outdir=${datadir}/nchlt_${alang}/local/dict
         echo "Using lexicon file: ${lexicon_fn}"
         local/prepare_dict.sh $lexicon_fn ${lex_outdir} || exit 1
